@@ -26,8 +26,7 @@ $valores = [
     'precio' => '0.00',
     'Unidad' => '',
     'cantidad' => '0',
-    'descripcion' => '',
-    'imagen_producto' => null
+    'descripcion' => ''
 ];
 
 // Obtener familias existentes
@@ -64,8 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             'precio' => (float)sanitizeInput($_POST['precio'] ?? '0', true),
             'Unidad' => strtoupper(sanitizeInput($_POST['Unidad'] ?? '')),
             'cantidad' => (int)sanitizeInput($_POST['cantidad'] ?? '0', true),
-            'descripcion' => sanitizeInput($_POST['descripcion'] ?? ''),
-            'imagen_producto' => $_FILES['imagen_producto'] ?? null
+            'descripcion' => sanitizeInput($_POST['descripcion'] ?? '')
         ];
 
         // Validaciones
@@ -84,36 +82,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($valores['cantidad'] < 0) {
             throw new Exception("La cantidad no puede ser negativa");
         }
-
-         // Manejo de imagen
-         $ruta_imagen = null;
-         if ($valores['imagen_producto'] && $valores['imagen_producto']['error'] === UPLOAD_ERR_OK) {
-             $directorio_img = 'img/';
-             
-             // Validar tipo de archivo
-             $extensiones_permitidas = ['jpg', 'jpeg', 'png', 'gif'];
-             $nombre_archivo = $valores['imagen_producto']['name'];
-             $extension = strtolower(pathinfo($nombre_archivo, PATHINFO_EXTENSION));
-             
-             if (!in_array($extension, $extensiones_permitidas)) {
-                 throw new Exception("Formato de imagen no válido. Use JPG, PNG o GIF.");
-             }
-             
-             // Validar tamaño (2MB máximo)
-             if ($valores['imagen_producto']['size'] > 2097152) {
-                 throw new Exception("La imagen es demasiado grande (máximo 2MB).");
-             }
-             
-             // Generar nombre único
-             $nombre_unico = uniqid('img_', true) . '.' . $extension;
-             $ruta_destino = $directorio_img . $nombre_unico;
-             
-             if (!move_uploaded_file($valores['imagen_producto']['tmp_name'], $ruta_destino)) {
-                 throw new Exception("Error al subir la imagen.");
-             }
-             
-             $ruta_imagen = $ruta_destino;
-         }
 
         // Manejo de familia
         $familia_final = null;
@@ -157,8 +125,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         try {
             $sql = "INSERT INTO productos (
                 referencia, nombre_producto, familia_producto, 
-                precio, Unidad, cantidad, descripcion, img_prod, last_update
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
+                precio, Unidad, cantidad, descripcion, last_update
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
             
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
@@ -168,25 +136,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $valores['precio'],
                 $valores['Unidad'],
                 $valores['cantidad'],
-                $valores['descripcion'],
-                $ruta_imagen
+                $valores['descripcion']
             ]);
 
             $pdo->commit();
             
             $_SESSION['mensaje_exito'] = "Producto agregado correctamente (Ref: $nueva_referencia)";
-            header("Location: agregar_producto.php");
+            header("Location: gestion_productos.php");
             exit();
 
         } catch (PDOException $e) {
             $pdo->rollBack();
-            // Eliminar imagen si se subió pero falló la transacción
-            if ($ruta_imagen && file_exists($ruta_imagen)) {
-                unlink($ruta_imagen);
-            }
             throw $e;
         }
-
 
     } catch (PDOException $e) {
         $error = $e->getCode() == 23000 ? 
@@ -206,12 +168,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Agregar Producto</title>
     <link rel="stylesheet" href="styles/css_agregar.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+   
 </head>
 <body>
     <div class="form-container">
         <div class="form-header">
+            
             <h1 class="form-title"><i class="fas fa-plus-circle title-icon"></i>Agregar Producto</h1>
+          
             <div class="deco-line"></div>
+         <!--   <p>Referencia generada: <strong><?php echo $nueva_referencia; ?></strong></p> -->
         </div>
         
         <?php if (isset($error)): ?>
@@ -220,7 +187,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         <?php endif; ?>
         
-        <form method="POST" id="productoForm" enctype="multipart/form-data">
+        <form method="POST" id="productoForm">
             <!-- Campo Nombre -->
             <div class="form-group">
                 <label for="nombre_producto" class="form-label">Nombre del producto *</label>
@@ -267,9 +234,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <label for="Unidad" class="form-label">Unidad *</label>
                 <select id="Unidad" name="Unidad" class="form-control" required>
                     <option value="">Seleccione...</option>
-                    <option value="L" <?php if ($valores['Unidad'] == 'L') echo 'selected'; ?>>L</option>
-                    <option value="KG" <?php if ($valores['Unidad'] == 'KG') echo 'selected'; ?>>Kg</option>
-                    <option value="U" <?php if ($valores['Unidad'] == 'U') echo 'selected'; ?>>U</option>
+                    <option value="L" <?php if ($valores['Unidad'] == 'L') echo 'selected'; ?>>Litros</option>
+                    <option value="KG" <?php if ($valores['Unidad'] == 'KG') echo 'selected'; ?>>Kilogramos</option>
+                    <option value="U" <?php if ($valores['Unidad'] == 'U') echo 'selected'; ?>>Unidades</option>
                 </select>
             </div>
             
@@ -279,21 +246,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                        value="<?php echo htmlspecialchars($valores['cantidad']); ?>">
             </div>
             
-            <!-- Campo Imagen -->
-            <div class="form-group">
-                <label for="imagen_producto" class="form-label">Imagen del producto</label>
-                <input type="file" id="imagen_producto" name="imagen_producto" class="form-control" accept="image/*">
-                <small class="form-text">Formatos aceptados: JPG, PNG, GIF (Máx. 2MB)</small>
-            </div>
-            
             <div class="form-group">
                 <label for="descripcion" class="form-label">Descripción</label>
                 <textarea id="descripcion" name="descripcion" class="form-control"><?php echo htmlspecialchars($valores['descripcion']); ?></textarea>
             </div>
 
             <a href="gestion_productos.php" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Volver a Gestión de Productos
-            </a><br><br>
+            <i class="fas fa-arrow-left"></i> Volver a Gestión de Productos
+            </a><br></br>
 
             <button type="submit" class="btn-submit">
                 <i class="fas fa-save"></i> Guardar Producto

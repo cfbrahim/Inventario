@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Validaciones
         if (empty($valores['nombre']) || empty($valores['apellido1']) || 
             empty($valores['email']) || empty($valores['password'])) {
-            throw new Exception("Todos los campos obligatorios (*) deben estar completos");
+            throw new Exception("Todos los campos obligatorios deben estar completos");
         }
 
         if (!filter_var($valores['email'], FILTER_VALIDATE_EMAIL)) {
@@ -80,44 +80,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Cliente</title>
-    <link rel="stylesheet" href="styles/css_cliente.css">
+    <link rel="stylesheet" href="styles/css.css">
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-box">
-            <div class="login-header">
-                <h2>Registro de Cliente</h2>
-                <div class="decorative-line"></div>
-            </div>
-
+    <div class="registro-container">
+        <div class="form-box">
+            <h2>Registro de Cliente</h2>
+            <br></br>
             <?php if($error): ?>
-                <div class="error-message"><?= $error ?></div>
+                <div class="error"><?php echo $error; ?></div>
             <?php endif; ?>
 
             <form method="POST">
                 <div class="form-group">
                     <input type="text" name="nombre" placeholder="Nombre *" 
-                           value="<?= $valores['nombre'] ?>" required>
+                           value="<?php echo $valores['nombre']; ?>" required>
                 </div>
                 
                 <div class="form-group">
                     <input type="text" name="apellido1" placeholder="Primer apellido *" 
-                           value="<?= $valores['apellido1'] ?>" required>
+                           value="<?php echo $valores['apellido1']; ?>" required>
                 </div>
                 
                 <div class="form-group">
                     <input type="text" name="apellido2" placeholder="Segundo apellido" 
-                           value="<?= $valores['apellido2'] ?>">
+                           value="<?php echo $valores['apellido2']; ?>">
                 </div>
                 
                 <div class="form-group">
                     <input type="email" name="email" placeholder="Correo electrónico *" 
-                           value="<?= $valores['email'] ?>" required>
+                           value="<?php echo $valores['email']; ?>" required>
                 </div>
                 
                 <div class="form-group">
                     <input type="tel" name="telefono" placeholder="Teléfono *" 
-                           value="<?= $valores['telefono'] ?>" required
+                           value="<?php echo $valores['telefono']; ?>" required
                            pattern="[0-9]{9,15}" title="Mínimo 9 dígitos">
                 </div>
                 
@@ -131,10 +128,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                            placeholder="Confirmar contraseña *" required>
                 </div>
                 
-                <button type="submit" class="btn-login">
-                    Registrarse
-                    <div class="btn-border"></div>
-                </button>
+                <button type="submit">Registrarse</button>
             </form>
             
             <p class="login-link">¿Ya tienes cuenta? <a href="login.php">Inicia sesión</a></p>

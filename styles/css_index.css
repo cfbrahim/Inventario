@@ -1,0 +1,75 @@
+:root {
+    --color-primario: #8A2BE2;
+    --color-secundario: #9932CC;
+    --color-fondo: #E6E6FA;
+    --color-texto: #4B0082;
+    --color-hover: #9400D3;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+}
+
+.index-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-size: cover;
+    background-image: url('../img/css/arx-book.jpg'); /* Imagen fija */
+    background-position: center;
+    background-repeat: no-repeat;
+    animation: changeBackground 20s infinite;
+}
+
+/*@keyframes changeBackground {
+    0% { background-image: url('../img/arx-book.jpg'); }
+    20% { background-image: url('../img/arx-book.jpg'); }
+    25% { background-image: url('../img/arxiu.jpg'); }
+    45% { background-image: url('../img/arxiu.jpg'); }
+    50% { background-image: url('../img/rak.jpg'); }
+    70% { background-image: url('../img/rak.jpg'); }
+    75% { background-image: url('../img/fish.jpg'); }
+    95% { background-image: url('../img/fish.jpg'); }
+    100% { background-image: url('../img/teria.jpg'); }
+}*/
+
+.card-container {
+    display: flex;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 15px;
+    width: 300px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+    cursor: pointer;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+}
+
+.card h2 {
+    color: var(--color-primario);
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .card-container {
+        flex-direction: column;
+    }
+}
